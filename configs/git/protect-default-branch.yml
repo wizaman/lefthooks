@@ -1,0 +1,21 @@
+# origin の既定ブランチに対する誤操作をローカルで防止します。
+# 既定ブランチは refs/remotes/origin/HEAD から取得します。参照がない場合は、
+# `git remote set-head origin --auto` で設定してください。
+# Git hook は --no-verify で回避できるため、強制が必要な場合は Git サーバー側でも
+# ブランチ保護を設定してください。
+
+pre-commit:
+  jobs:
+    # 既定ブランチをチェックアウトした状態でのコミットを拒否します。
+    - name: protect default branch from commits
+      script: prevent-default-branch-commit.sh
+      runner: bash
+
+pre-push:
+  jobs:
+    # push 先の ref を検査し、既定ブランチを更新する push を拒否します。
+    - name: protect default branch from pushes
+      script: prevent-default-branch-push.sh
+      runner: bash
+      # pre-push が受け取る ref 情報をスクリプトへ渡すために必要です。
+      use_stdin: true

@@ -1,0 +1,4 @@
+# 本リポジトリの保守に使用する Lefthook 設定です。
+# 公開する共有設定の定義を直接再利用し、実際の利用環境でも継続的に検証します。
+extends:
+  - configs/git/protect-default-branch.yml
