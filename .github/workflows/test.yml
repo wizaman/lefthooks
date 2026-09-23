@@ -1,0 +1,42 @@
+name: Test
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v7
+
+      - name: Install Lefthook
+        env:
+          LEFTHOOK_VERSION: 2.1.14
+          LEFTHOOK_SHA256: 2be3187101b3a2edd5edf8b546aa2e3820531c517b4cd0216601a9c06f07c42d
+        run: |
+          archive="$RUNNER_TEMP/lefthook.gz"
+          binary="$RUNNER_TEMP/lefthook"
+          curl --fail --location --silent --show-error \
+            --output "$archive" \
+            "https://github.com/evilmartians/lefthook/releases/download/v${LEFTHOOK_VERSION}/lefthook_${LEFTHOOK_VERSION}_Linux_x86_64.gz"
+          echo "${LEFTHOOK_SHA256}  ${archive}" | sha256sum --check
+          gzip --decompress --stdout "$archive" > "$binary"
+          chmod +x "$binary"
+          echo "$RUNNER_TEMP" >> "$GITHUB_PATH"
+          "$binary" version
+
+      - name: Set up Just
+        uses: extractions/setup-just@v4
+        with:
+          just-version: 1.58.0
+
+      - name: Run tests
+        run: just test
